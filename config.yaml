@@ -1,0 +1,59 @@
+# =============================================================================
+# config.yaml — Intelligent Candidate Discovery
+# =============================================================================
+# This file is the single place to adapt the pipeline to the OFFICIAL
+# India Runs dataset once you download it from your Hack2skill dashboard.
+# You should not need to touch any Python code to point this at real data —
+# just update `data` paths and `column_map` to match the real column names.
+# =============================================================================
+
+data:
+  jobs_path: "data/jobs.csv"
+  candidates_path: "data/candidates.csv"
+  signals_path: "data/behavioral_signals.csv"
+  skills_taxonomy_path: "data/skills_taxonomy.json"
+  output_path: "outputs/ranked_shortlist.csv"
+
+# Map the pipeline's internal field names -> actual column names in your CSVs.
+# Edit the right-hand side if the official dataset uses different headers.
+column_map:
+  jobs:
+    job_id: "job_id"
+    title: "title"
+    description: "description"
+  candidates:
+    candidate_id: "candidate_id"
+    name: "name"
+    current_title: "current_title"
+    years_experience: "years_experience"
+    skills: "skills"
+    profile_summary: "profile_summary"
+  signals:
+    candidate_id: "candidate_id"
+    profile_completeness_pct: "profile_completeness_pct"
+    last_active_days_ago: "last_active_days_ago"
+    applications_last_30_days: "applications_last_30_days"
+    profile_updates_last_90_days: "profile_updates_last_90_days"
+    courses_completed_last_6_months: "courses_completed_last_6_months"
+    skill_endorsements_growth_pct: "skill_endorsements_growth_pct"
+    content_engagement_score: "content_engagement_score"
+
+# How many top candidates to keep per job in the final shortlist
+top_k_per_job: 10
+
+# Final score = weighted sum of these 4 sub-scores (each normalized 0-1 per job).
+# Must sum to 1.0. Tune these to emphasize what matters most for your story.
+ranking_weights:
+  semantic: 0.35      # contextual relevance of profile <-> JD (beyond keywords)
+  skill_match: 0.30   # taxonomy-based required/nice-to-have skill coverage
+  experience_fit: 0.15  # how well years-of-experience fits the JD's target range
+  behavioral: 0.20    # activity/intent signals (the "hidden gem" detector)
+
+# Optional: enable LLM-based re-ranking / justification for the top-N candidates
+# per job. Requires ANTHROPIC_API_KEY to be set in the environment. If not set,
+# the pipeline automatically falls back to the rule-based explanation generator
+# (the pipeline still runs fully and produces a complete shortlist either way).
+llm_rerank:
+  enabled: false
+  model: "claude-sonnet-4-6"
+  top_n_to_rerank: 5
